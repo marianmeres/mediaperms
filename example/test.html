@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>mediaperms - example</title>
+		<style>
+		*,
+		*::before,
+		*::after {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		:root {
+			--bg: #f8f9fa;
+			--fg: #1a1a2e;
+			--card: #fff;
+			--border: #dee2e6;
+			--green: #2d6a4f;
+			--red: #c1121f;
+			--amber: #e9c46a;
+			--btn: #264653;
+			--btn-fg: #fff;
+			--btn-hover: #1b3a4b;
+			--mono: "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+			--sans: system-ui, -apple-system, sans-serif;
+		}
+		body {
+			font-family: var(--sans);
+			background: var(--bg);
+			color: var(--fg);
+			min-height: 100dvh;
+			display: flex;
+			flex-direction: column;
+			padding: 1rem;
+			max-width: 480px;
+			margin: 0 auto;
+		}
+		h1 {
+			font-size: 1.25rem;
+			font-weight: 700;
+		}
+		h2 {
+			font-size: 0.9rem;
+			font-weight: 600;
+			opacity: 0.5;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+			margin-bottom: 0.5rem;
+		}
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 1rem;
+		}
+
+		.card {
+			background: var(--card);
+			border: 1px solid var(--border);
+			border-radius: 0.75rem;
+			padding: 0.875rem;
+			margin-bottom: 0.75rem;
+		}
+		.kind-group {
+			display: flex;
+			gap: 0.5rem;
+		}
+		.kind-group button {
+			flex: 1;
+			font-size: 0.8rem;
+		}
+		.kind-group button.is-active {
+			outline: 2px solid var(--btn);
+			outline-offset: 1px;
+		}
+		.status-row {
+			font-family: var(--mono);
+			font-size: 0.9rem;
+			line-height: 1.8;
+		}
+		.status-row strong {
+			font-weight: 600;
+		}
+		.green {
+			color: var(--green);
+		}
+		.red {
+			color: var(--red);
+		}
+		.amber {
+			color: #b45309;
+		}
+
+		.btn-group {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+		button {
+			font-family: var(--sans);
+			font-size: 0.875rem;
+			font-weight: 500;
+			padding: 0.625rem 1rem;
+			border: none;
+			border-radius: 0.5rem;
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+		.btn-primary {
+			background: var(--btn);
+			color: var(--btn-fg);
+		}
+		.btn-primary:hover {
+			background: var(--btn-hover);
+		}
+		.btn-primary:disabled {
+			opacity: 0.4;
+			cursor: not-allowed;
+		}
+		.btn-secondary {
+			background: var(--border);
+			color: var(--fg);
+		}
+		.btn-secondary:hover {
+			background: #ced4da;
+		}
+
+		.log-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 0.25rem;
+		}
+		.log-actions {
+			display: flex;
+			gap: 0.75rem;
+		}
+		.log-actions button {
+			background: none;
+			padding: 0;
+			font-size: 0.9rem;
+			opacity: 0.4;
+			text-decoration: underline;
+		}
+		.log-actions button:hover {
+			opacity: 0.7;
+		}
+		#log {
+			font-family: var(--mono);
+			font-size: 0.9rem;
+			line-height: 1.5;
+			background: #1a1a2e;
+			color: #e0e0e0;
+			border-radius: 0.5rem;
+			padding: 0.75rem;
+			min-height: 160px;
+			max-height: 40vh;
+			overflow: auto;
+			white-space: pre-wrap;
+			word-break: break-all;
+			flex: 1;
+		}
+		.log-wrap {
+			display: flex;
+			flex-direction: column;
+			flex: 1;
+			min-height: 0;
+		}
+		</style>
+	</head>
+	<body>
+		<div class="header">
+			<h1>Media Permission Test</h1>
+			<span
+				id="platform-badge"
+				style="font-size: 0.9rem; opacity: 0.5"
+			></span>
+		</div>
+
+		<!-- Kind selector -->
+		<div class="card">
+			<h2>Kind</h2>
+			<div class="kind-group" id="kind-group">
+				<button class="btn-secondary is-active" data-kind="microphone">
+					microphone
+				</button>
+				<button class="btn-secondary" data-kind="camera">camera</button>
+				<button class="btn-secondary" data-kind="camera-and-microphone">
+					both
+				</button>
+			</div>
+		</div>
+
+		<!-- Status card -->
+		<div class="card">
+			<h2>Status</h2>
+			<div class="status-row">
+				Permission: <strong id="s-status">...</strong>
+			</div>
+			<div class="status-row">
+				Devices: <strong id="s-devices">...</strong>
+			</div>
+			<div class="status-row">
+				Platform: <strong id="s-platform">...</strong>
+			</div>
+			<div class="status-row">
+				Can open settings: <strong id="s-settings">...</strong>
+			</div>
+			<div class="status-row">Busy: <strong id="s-busy">...</strong></div>
+			<div class="status-row">
+				Error: <strong id="s-error">...</strong>
+			</div>
+			<div class="status-row">
+				Last checked: <strong id="s-checked">...</strong>
+			</div>
+		</div>
+
+		<!-- Permission actions -->
+		<div class="card">
+			<h2>Permission Actions</h2>
+			<div class="btn-group">
+				<button class="btn-primary" id="btn-check">
+					Check permission
+				</button>
+				<button class="btn-primary" id="btn-request">
+					Request (getUserMedia)
+				</button>
+				<button class="btn-primary" id="btn-recheck">
+					Recheck (query + fallback)
+				</button>
+				<button class="btn-secondary" id="btn-settings">
+					Open app settings (native bridge)
+				</button>
+			</div>
+		</div>
+
+		<!-- Diagnostics -->
+		<div class="card">
+			<h2>Diagnostics</h2>
+			<div class="btn-group">
+				<button class="btn-secondary" id="btn-enumerate">
+					Enumerate media devices
+				</button>
+				<button class="btn-secondary" id="btn-probe">
+					Probe native bridge
+				</button>
+				<button class="btn-secondary" id="btn-stream">
+					Acquire &amp; release stream
+				</button>
+			</div>
+		</div>
+
+		<!-- Log -->
+		<div class="log-wrap">
+			<div class="log-header">
+				<h2 style="margin: 0">Log (<span id="log-count">0</span>)</h2>
+				<div class="log-actions">
+					<button id="btn-copy">copy</button>
+					<button id="btn-clear">clear</button>
+				</div>
+			</div>
+			<pre id="log"></pre>
+		</div>
+
+		<script type="module">
+		import { createMediaPerms } from "./dist/bundle.js";
+
+		// ---------------------------------------------------------------------------
+		// Log
+		// ---------------------------------------------------------------------------
+		const logEl = document.getElementById("log");
+		const logCountEl = document.getElementById("log-count");
+		const logLines = [];
+
+		function log(msg) {
+			const d = new Date();
+			const mm = String(d.getMinutes()).padStart(2, "0");
+			const ss = String(d.getSeconds()).padStart(2, "0");
+			const line = `[${mm}:${ss}] ${msg}`;
+			logLines.push(line);
+			logEl.textContent = logLines.join("\n");
+			logCountEl.textContent = logLines.length;
+			requestAnimationFrame(() => logEl.scrollTo(0, logEl.scrollHeight));
+		}
+
+		document.getElementById("btn-copy").onclick = async () => {
+			try {
+				await navigator.clipboard.writeText(logLines.join("\n"));
+				log("(Logs copied to clipboard)");
+			} catch {
+				const ta = document.createElement("textarea");
+				ta.value = logLines.join("\n");
+				ta.style.cssText = "position:fixed;opacity:0";
+				document.body.appendChild(ta);
+				ta.select();
+				document.execCommand("copy");
+				document.body.removeChild(ta);
+				log("(Logs copied via fallback)");
+			}
+		};
+
+		document.getElementById("btn-clear").onclick = () => {
+			logLines.length = 0;
+			logEl.textContent = "";
+			logCountEl.textContent = "0";
+		};
+
+		// ---------------------------------------------------------------------------
+		// Status rendering
+		// ---------------------------------------------------------------------------
+		const els = {
+			status: document.getElementById("s-status"),
+			devices: document.getElementById("s-devices"),
+			platform: document.getElementById("s-platform"),
+			settings: document.getElementById("s-settings"),
+			busy: document.getElementById("s-busy"),
+			error: document.getElementById("s-error"),
+			checked: document.getElementById("s-checked"),
+		};
+
+		const statusColors = {
+			granted: "green",
+			denied: "red",
+			prompt: "amber",
+			unknown: "",
+		};
+
+		function renderState(s) {
+			els.status.textContent = s.status;
+			els.status.className = statusColors[s.status] || "";
+			els.devices.textContent = Object.entries(s.devices)
+				.map(([device, d]) => `${device}=${d.status}${d.observedDenied ? "!" : ""}`)
+				.join(" ");
+			els.platform.textContent = s.platform;
+			els.settings.textContent = s.canOpenSettings ? "yes" : "no";
+			els.busy.textContent = s.busy ? "yes..." : "no";
+			els.error.textContent = s.error ? `${s.error.code}: ${s.error.message}` : "none";
+			if (s.lastCheckedAt) {
+				const d = new Date(s.lastCheckedAt);
+				els.checked.textContent = `${String(d.getMinutes()).padStart(2, "0")}:${
+					String(d.getSeconds()).padStart(2, "0")
+				}`;
+			} else {
+				els.checked.textContent = "never";
+			}
+		}
+
+		// ---------------------------------------------------------------------------
+		// Create mediaperms instance (rebuilt when the kind changes)
+		// ---------------------------------------------------------------------------
+		let perms = null;
+		let unsub = null;
+		let currentKind = "microphone";
+
+		function build() {
+			unsub?.();
+			perms?.destroy();
+			perms = createMediaPerms(currentKind, {
+				logger: {
+					debug: (...a) => log(`[debug] ${a.join(" ")}`),
+					warn: (...a) => log(`[warn] ${a.join(" ")}`),
+					error: (...a) => log(`[error] ${a.join(" ")}`),
+				},
+			});
+			unsub = perms.subscribe((s) => {
+				renderState(s);
+				log(`state -> ${s.status} (busy=${s.busy})`);
+			});
+			document.getElementById("platform-badge").textContent = perms
+				.get().platform;
+			log(`--- created kind="${currentKind}" ---`);
+		}
+
+		const $kindGroup = document.getElementById("kind-group");
+		$kindGroup.addEventListener("click", (e) => {
+			const btn = e.target.closest("button[data-kind]");
+			if (!btn) return;
+			currentKind = btn.dataset.kind;
+			for (const b of $kindGroup.querySelectorAll("button")) {
+				b.classList.toggle("is-active", b === btn);
+			}
+			build();
+		});
+
+		log(`userAgent: ${navigator.userAgent}`);
+		log(
+			`mediaDevices: ${!!navigator.mediaDevices}, getUserMedia: ${!!navigator
+				.mediaDevices?.getUserMedia}`,
+		);
+		log(`isSecureContext: ${window.isSecureContext}`);
+		build();
+
+		// ---------------------------------------------------------------------------
+		// Permission actions
+		// ---------------------------------------------------------------------------
+		document.getElementById("btn-check").onclick = async () => {
+			log("--- check() ---");
+			const status = await perms.check();
+			log(`check result: ${status}`);
+		};
+
+		document.getElementById("btn-request").onclick = async () => {
+			log("--- request() ---");
+			const status = await perms.request();
+			log(`request result: ${status}`);
+		};
+
+		document.getElementById("btn-recheck").onclick = async () => {
+			log("--- recheck() ---");
+			const status = await perms.recheck();
+			log(`recheck result: ${status}`);
+		};
+
+		document.getElementById("btn-settings").onclick = () => {
+			log("--- openSettings() ---");
+			const ok = perms.openSettings();
+			log(`openSettings returned: ${ok}`);
+		};
+
+		// ---------------------------------------------------------------------------
+		// Diagnostics
+		// ---------------------------------------------------------------------------
+		document.getElementById("btn-enumerate").onclick = async () => {
+			log("--- enumerateDevices ---");
+			try {
+				const devices = await navigator.mediaDevices.enumerateDevices();
+				for (const kind of ["audioinput", "videoinput"]) {
+					const inputs = devices.filter((d) => d.kind === kind);
+					log(`Found ${inputs.length} ${kind}(s):`);
+					inputs.forEach((d, i) =>
+						log(
+							`  [${i}]: "${d.label || "(no label)"}" id=${
+								d.deviceId.slice(0, 8)
+							}...`,
+						)
+					);
+				}
+			} catch (e) {
+				log(`enumerateDevices error: ${e.message}`);
+			}
+		};
+
+		document.getElementById("btn-probe").onclick = () => {
+			log("--- native bridge probe ---");
+			const wk = window.webkit;
+			log(`window.webkit: ${wk ? "exists" : "undefined"}`);
+			if (wk?.messageHandlers) {
+				const handlers = Object.keys(wk.messageHandlers);
+				log(
+					`messageHandlers (${handlers.length}): ${
+						handlers.join(", ") || "(none enumerable)"
+					}`,
+				);
+				for (
+					const name of [
+						"openSettings",
+						"openAppSettings",
+						"nativeAction",
+						"bridge",
+					]
+				) {
+					log(
+						`  .${name}: ${wk.messageHandlers[name] ? "EXISTS" : "no"}`,
+					);
+				}
+			}
+			const aj = window.AndroidInterface || window.Android;
+			log(`Android JS interface: ${aj ? "exists" : "undefined"}`);
+			log(`navigator.platform: ${navigator.platform}`);
+			log(`standalone: ${navigator.standalone}`);
+			log(`isSecureContext: ${window.isSecureContext}`);
+		};
+
+		document.getElementById("btn-stream").onclick = async () => {
+			log(`--- acquire & release stream (${currentKind}) ---`);
+			const constraints = {
+				...(currentKind !== "camera" ? { audio: true } : {}),
+				...(currentKind !== "microphone" ? { video: true } : {}),
+			};
+			try {
+				const stream = await navigator.mediaDevices.getUserMedia(
+					constraints,
+				);
+				const tracks = stream.getTracks();
+				log(`Got ${tracks.length} track(s)`);
+				tracks.forEach((t, i) =>
+					log(
+						`  track[${i}]: kind=${t.kind} "${t.label}", enabled=${t.enabled}, muted=${t.muted}`,
+					)
+				);
+				tracks.forEach((t) => t.stop());
+				log("All tracks stopped");
+			} catch (e) {
+				log(`getUserMedia error: ${e.name}: ${e.message}`);
+			}
+		};
+		</script>
+	</body>
+</html>
