@@ -1,0 +1,4 @@
+Framework-agnostic microphone/camera permission lifecycle manager. Detects platform
+(browser, PWA, iOS/Android WebView), checks and requests mic/camera permission (single
+or combined kind with one prompt), tracks state reactively via @marianmeres/store, and
+supports native bridge for opening app settings.
