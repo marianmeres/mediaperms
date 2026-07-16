@@ -1,3 +1,34 @@
+/**
+ * Framework-agnostic "re-enable your microphone / camera" guide UI.
+ *
+ * A separate entrypoint of `@marianmeres/mediaperms`
+ * (`@marianmeres/mediaperms/reenable-guide`) that renders a self-contained,
+ * multi-step tutorial walking a user through turning permission back on once
+ * it has been blocked — the flow the core manager can detect but not fix.
+ *
+ * {@linkcode createReenableGuide} mounts the built-in DOM chrome (illustrated
+ * steps, theming, i18n) into a container, while
+ * {@linkcode createReenableGuideController} exposes the same headless state
+ * machine + resolved content with no DOM, so you can render the markup in any
+ * framework. Step copy auto-tailors to the media {@linkcode MediaPermsKind}
+ * and the detected {@linkcode ReenableGuideFlavor} (iOS Safari, Android
+ * Chrome, desktop, WebView, PWA); {@linkcode detectFlavor} and
+ * {@linkcode defaultStepsFor} are exported for custom renderers. English and
+ * Slovak translations ship built in.
+ *
+ * ```ts
+ * import { createReenableGuide } from "@marianmeres/mediaperms/reenable-guide";
+ *
+ * const guide = createReenableGuide({
+ *   kind: "camera",
+ *   container: document.getElementById("app")!,
+ *   onDone: () => guide.destroy(),
+ * });
+ * ```
+ *
+ * @module
+ */
+
 import {
 	detectPlatform,
 	devicesForKind,
