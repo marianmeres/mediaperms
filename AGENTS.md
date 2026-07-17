@@ -20,7 +20,7 @@
   reenable-guide.test.ts    — Headless controller + copy resolution tests
   reenable-guide-dom.test.ts — DOM factory tests (deno-dom)
 /example
-  test.html            — Vanilla JS demo page (core, kind switcher)
+  index.html           — Vanilla JS demo page (core, kind switcher)
   guide.html           — Playground for the tutorial extras
   svelte/              — Reference Svelte 5 components (not built here)
 /scripts
